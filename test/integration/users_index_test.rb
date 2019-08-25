@@ -5,6 +5,8 @@ class UsersIndexTest < ActionDispatch::IntegrationTest
   def setup
     @admin = users(:michael)
     @non_admin = users(:archer)
+    @acti = User.create(name: "acti User", email: "acti@example.com", password: "foobar", password_confirmation: "foobar", activated: true)
+    @non_acti = User.create(name: "non_acti User", email: "nonacti@example.com", password: "foobar", password_confirmation: "foobar", activated: false, activated_at: nil)
   end
 
 
@@ -29,6 +31,15 @@ class UsersIndexTest < ActionDispatch::IntegrationTest
     log_in_as(@non_admin)
     get users_path
     assert_select 'a', text: 'delete', count: 0
+  end
+
+  test "index don't include non_activated user" do
+    log_in_as(@admin)
+    max_page = User.all.count/30 + 1
+    (1..max_page).each do |page|
+      get users_path, params: {page:page}
+      assert_select 'a[href=?]', user_path(@non_acti), count: 0
+    end
   end
 
 end

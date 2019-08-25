@@ -5,6 +5,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
   def setup
     @user = users(:michael)
     @other_user = users(:archer)
+    @actest_user = User.create(name: "Example User", email: "user@example.com", password: "foobar", password_confirmation: "foobar", activated: false, activated_at: nil)
+
   end
 
   test "should get new" do
@@ -43,7 +45,6 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to login_url
   end
 
-  #!!!!!!! このテスト、ストロングパラメーターにアドミンにしても通過する???
   test "should not allow the admin attribute to be edited via the web" do
     log_in_as(@other_user)
     assert_not @other_user.admin?
@@ -67,6 +68,13 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference 'User.count' do
       delete user_path(@user)
     end
+    assert_redirected_to root_url
+  end
+
+  test "activated user only show" do
+    get user_path(@user)
+    assert_response :success
+    get user_path(@actest_user)
     assert_redirected_to root_url
   end
 
